@@ -6,31 +6,16 @@ from TradingEnvironment import TradingEnvironment
 
 # Create the trading environment
 env = TradingEnvironment(
-    historicalDataPath=r"D:\PycharmProjects\Paper Trading -- Reinforcement Learning\Dataset\ITC.csv")
+    historicalDataPath=r"D:\PycharmProjects\Paper Trading -- Reinforcement Learning\Dataset\ITC.csv", portfolioValue=10000)
 
 historicalData = env.getPreprocessedHistoricalData()
 num_steps = len(historicalData)
 
 # Wrap the environment with DummyVecEnv for compatibility with Stable Baselines3
 env = DummyVecEnv([lambda: env])
-
 models_dir = "models/PPO"
-logdir = "logs"
-
-if not os.path.exists(models_dir):
-    os.makedirs(models_dir)
-
-if not os.path.exists(logdir):
-    os.makedirs(logdir)
-
-# Create the PPO model
-model = PPO('MlpPolicy', env, verbose=1, tensorboard_log=logdir)
-
-TIMESTAMPS = 10000
-
-for i in range(1, 50):
-    model.learn(total_timesteps=TIMESTAMPS, reset_num_timesteps=False, tb_log_name="PPO")
-    model.save(f"{models_dir}/{TIMESTAMPS * i}")
+model_path = f"{models_dir}/460000.zip"
+model = PPO.load(model_path, env=env)
 
 # Perform paper trading with real-time visualization
 obs = env.reset()
@@ -59,19 +44,22 @@ for step in range(num_steps):
         scatter_buy.set_offsets((step, historicalData['Close'].iloc[step]))
 
     # Calculate the profit in real time
-    portfolio_value = info['portfolio_value']
+    portfolio_value = info[0]['portfolio_value']
     portfolio_values.append(portfolio_value)
 
     if done:
         break
 
     # Update the plot
-    plt.pause(0.01)
+    # plt.pause(0.001)  # Adjust the pause duration to control the speed of trading
 
 # Plot the portfolio value over time
-plt.figure()
+plt.figure(figsize=(10, 6))  # Set the figure size
 plt.plot(portfolio_values)
 plt.xlabel('Time')
 plt.ylabel('Portfolio Value')
 plt.title('Portfolio Value over Time')
+plt.tight_layout()  # Adjust the spacing of the plot elements
 plt.show()
+
+print(portfolio_values[-1])

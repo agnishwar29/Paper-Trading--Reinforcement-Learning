@@ -1,3 +1,5 @@
+import numpy as np
+import ta
 import pandas as pd
 
 
@@ -21,6 +23,20 @@ class HistoricalDataProcessor:
 
         self.__historicalData.dropna(inplace=True)
 
+    def __calculateRSI(self, period):
+        delta = self.__historicalData["Close"].diff()
+
+        up, down = delta.copy(), delta.copy()
+        up[up < 0] = 0
+        down[down > 0] = 0
+
+        _gain = up.ewm(com=(period - 1), min_periods=period).mean()
+        _loss = down.abs().ewm(com=(period - 1), min_periods=period).mean()
+
+        RS = _gain / _loss
+
+        self.__historicalData['RSI'] = pd.Series(100 - (100 / (1 + RS)), name="RSI")
+
     def getProcessedData(self):
 
         # stripping the historical data
@@ -29,8 +45,8 @@ class HistoricalDataProcessor:
         # removing nan values from the dataset
         self.__removeNanValues()
 
-        # changing the string date to datetime format
-        # self.__changeDatetime()
+        # calculating the RSI
+        self.__calculateRSI(period=14)
 
         return self.__historicalData
 

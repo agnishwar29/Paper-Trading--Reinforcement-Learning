@@ -8,72 +8,43 @@ from HistoricalDataHandler.HistoricalDataProcessor import HistoricalDataProcesso
 
 class TradingEnvironment(gym.Env):
 
-    def __init__(self, historicalDataPath):
+    def __init__(self, historicalDataPath, portfolioValue):
         self.__historicalDataPath = historicalDataPath
+        self.__portfolioValue = portfolioValue
         self.data = self.getPreprocessedHistoricalData()
 
         self.current_step = 0
-        self.max_steps = len(self.__historicalDataPath)
+        self.max_steps = len(self.data)
 
         self.action_space = gym.spaces.Discrete(2)  # 0: Sell, 1: Buy
-        self.observation_space = gym.spaces.Box(low=0, high=1, shape=(5,), dtype=float)
+
+        # the shape of the observation is 5 because we have Open, High, Low, Close, Volume, RSI
+        self.observation_space = gym.spaces.Box(low=0, high=1, shape=(6,), dtype=float)
 
     def getPreprocessedHistoricalData(self):
 
         dataProcessor = HistoricalDataProcessor()
         dataProcessor.specifyHistoricalDataPath(path=self.__historicalDataPath)
 
-        return dataProcessor.getProcessedData()
-
-    # def reset(self):
-    #     self.current_step = 0
-    #     return self._get_observation()
-    #
-    # def step(self, action):
-    #     self.current_step += 1
-    #     done = False
-    #     reward = 0
-    #
-    #     # Get the current market data
-    #     current_data = self.data.iloc[self.current_step]
-    #
-    #     if self.current_step + 1 == len(self.data):
-    #         done = True
-    #
-    #         # Take action based on the agent's decision
-    #         if action == 0:  # Sell action
-    #             # Calculate the reward based on the sell action
-    #             reward = current_data['Close'] - current_data['Open']
-    #         elif action == 1:  # Buy action
-    #             # Calculate the reward based on the buy action
-    #             reward = current_data['Open'] - current_data['Close']
-    #         else:
-    #             raise ValueError("Invalid action.")
-    #
-    #     info = {}  # Additional information for debugging or analysis
-    #
-    #     return self._get_observation(), reward, done, info
-    #
-    # def _get_observation(self):
-    #     # Retrieve the current market data for the observation
-    #     observation = self.data.iloc[self.current_step].values
-    #     observation = observation.astype(np.float32)
-    #     return observation
+        return dataProcessor.getProcessedData()[14:]
 
     def reset(self):
         self.current_step = 0
-        self.portfolio_value = 100000  # Reset the portfolio value
+        self.portfolio_value = self.__portfolioValue  # Reset the portfolio value
         self.holding_stock = False  # Reset the stock holding status
         return self._get_observation()
 
     def step(self, action):
         self.current_step += 1
-        done = self.current_step >= self.max_steps
+
+        done = False
+        reward = 0
 
         # Get the current market data
         current_data = self.data.iloc[self.current_step]
 
-        reward = 0
+        if self.current_step + 1 == len(self.data):
+            done = True
 
         # Take action based on the agent's decision
         if action == 0:  # Sell action
@@ -87,13 +58,17 @@ class TradingEnvironment(gym.Env):
                 self.holding_stock = True  # Set the stock holding status
                 reward = current_data['Open'] - current_data['Close']  # Calculate the reward based on the buy action
 
-        info = {'portfolio_value': self.portfolio_value}  # Additional information for debugging or analysis
+        info = {'portfolio_value': self.portfolio_value}
 
         return self._get_observation(), reward, done, info
 
     def _get_observation(self):
         # Retrieve the current market data for the observation
         observation = self.data.iloc[self.current_step].values
-        observation = observation.astype(np.float32)
-        return observation
+        mean = np.mean(self.data.values, axis=0)
+        std = np.std(self.data.values, axis=0)
+        normalized_observation = (observation - mean) / std
+
+        normalized_observation = normalized_observation.astype(np.float32)
+        return normalized_observation
 
