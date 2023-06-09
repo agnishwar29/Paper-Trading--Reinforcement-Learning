@@ -19,14 +19,14 @@ env = TradingEnvironment(
 # Wrap the environment with DummyVecEnv for compatibility with Stable Baselines3
 env = DummyVecEnv([lambda: env])
 
-TIMESTAMPS = 100000
+TIMESTAMPS = 1000
 
 # Create the PPO model
-model = PPO('MlpPolicy', env, verbose=1, tensorboard_log=logdir, learning_rate=0.01, ent_coef=0.1, n_epochs=16,
-            batch_size=32, gamma=0.99, clip_range=0.05)
+model = PPO('MlpPolicy', env, verbose=1, tensorboard_log=logdir, learning_rate=0.0001, ent_coef=0.5, n_epochs=32,
+            batch_size=64, gamma=0.99, clip_range=0.01, policy_kwargs={'net_arch': [32, 64, 128]})
 
 
-for i in range(1, 50):
+for i in range(1, 5):
     model.learn(total_timesteps=TIMESTAMPS, reset_num_timesteps=False, tb_log_name="PPO")
     model.save(f"{models_dir}/{TIMESTAMPS * i}")
 
