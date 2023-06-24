@@ -37,6 +37,9 @@ class HistoricalDataProcessor:
 
         self.__historicalData['RSI'] = pd.Series(100 - (100 / (1 + RS)), name="RSI")
 
+    def __calculateEma(self, period):
+        self.__historicalData['EMA'] = self.__historicalData['Close'].ewm(span=period, adjust=False).mean()
+
     def getProcessedData(self):
 
         # stripping the historical data
@@ -47,6 +50,8 @@ class HistoricalDataProcessor:
 
         # calculating the RSI
         self.__calculateRSI(period=14)
+
+        self.__calculateEma(period=14)
 
         return self.__historicalData
 
