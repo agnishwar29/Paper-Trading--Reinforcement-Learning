@@ -45,7 +45,7 @@ def trainModelWithAllDatasetsAvailable():
 
     TIMESTAMPS = 10000
 
-    allDataset = os.listdir(r"D:\PycharmProjects\Paper Trading -- Reinforcement Learning\Dataset\\")
+    allDataset = os.listdir(r"/Dataset\\")
 
     for i, dataset in zip(range(1, len(allDataset)), allDataset):
     # for i, dataset in zip(range(1, 4), allDataset):
