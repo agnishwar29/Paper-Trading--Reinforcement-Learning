@@ -1,29 +1,15 @@
-import matplotlib.pyplot as plt
-import threading
+value = -102047.3  # The value to normalize
+min_value = 0  # The minimum value in the range
+max_value = 100  # The maximum value in the range
 
-# Define a lock to synchronize access to the plot
-plot_lock = threading.Lock()
+# Normalize the value
+normalized_value = (value - min_value) / (max_value - min_value)
 
-
-def plot_data():
-    # Acquire the lock before accessing/modifying the plot
-    plot_lock.acquire()
-
-    # Perform plotting operations
-    plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
-    plt.xlabel('X-axis')
-    plt.ylabel('Y-axis')
-    plt.title('Threaded Plot')
-
-    # Display the plot
-    plt.show()
-
-    # Release the lock after finishing the plot
-    plot_lock.release()
+# Print the normalized value
+print(normalized_value)
 
 
-# Create a thread to run the plot_data function
-thread = threading.Thread(target=plot_data)
+def __normalizeValue(self, minValue, maxValue, value):
+    normalized_value = (value - minValue) / (maxValue - minValue)
 
-# Start the thread
-thread.start()
+    return normalized_value

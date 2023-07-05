@@ -2,7 +2,6 @@ import matplotlib
 import matplotlib.pyplot as plt
 from stable_baselines3 import PPO
 from TradingEnvironment import TradingEnvironment
-import threading
 import seaborn as sns
 import multiprocessing as mp
 
@@ -13,12 +12,12 @@ matplotlib.use('qt5agg')
 class Trade:
 
     def __init__(self):
-        self.__datasetFilepath = r"D:\PycharmProjects\Paper Trading -- Reinforcement Learning\Dataset\\"
+        self.__datasetFilepath = r"D:\PycharmProjects\Paper Trading -- Reinforcement Learning\Dataset\Nifty\\"
         self.__stocks = ['BAJAJFINSV.csv', 'TATASTEEL.csv', 'HDFC.csv', 'HDFCBANK.csv']
 
         self.__models_dir = r"D:\PycharmProjects\Paper Trading -- Reinforcement Learning\ModelTraining\models\PPO"
-        self.__model_path = fr"{self.__models_dir}\\190000.zip"
-        self.__portfolioValue = 2500000
+        self.__model_path = fr"{self.__models_dir}\\66000.zip"
+        self.__portfolioValue = 2000000
         self.__finalPortfolioValue = 0
 
     def runTrade(self):
@@ -65,8 +64,9 @@ class Trade:
         for step in range(num_steps):
             action, _ = model.predict(obs)
             obs, reward, done, info = env.step(action)
-            # print(info)
-            print(f"Stock: {dataset} || Action: {action}")
+
+            print(f"Stock: {dataset} || Action: {action} || Portfolio value: {info['portfolio_value']} || Position cost: {info['position_cost']}")
+
             # Visualization: Update the scatter plots based on the action
             if action == 0:  # Sell action
                 # scatter_sell.set_offsets((step, historicalData['Close'].iloc[step]))
@@ -105,8 +105,7 @@ class Trade:
             plt.draw()
             plt.pause(0.001)
 
-        self.__finalPortfolioValue += portfolio_values[-1]
-        print(f"Added final portfolio value for: {dataset}")
+        print(f"Final portfolio value for {dataset} -> {portfolio_values[-1]} || Total profit: {sum(profits)}")
 
 
 if __name__ == '__main__':

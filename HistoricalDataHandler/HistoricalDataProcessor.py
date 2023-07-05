@@ -1,5 +1,4 @@
-import numpy as np
-import ta
+from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
 
 
@@ -22,6 +21,11 @@ class HistoricalDataProcessor:
     def __removeNanValues(self):
 
         self.__historicalData.dropna(inplace=True)
+
+    def __scaleValues(self):
+        scaler = MinMaxScaler()
+        columns = self.__historicalData.columns
+        self.__historicalData = pd.DataFrame(scaler.fit_transform(self.__historicalData), columns=columns)
 
     def __calculateRSI(self, period):
         delta = self.__historicalData["Close"].diff()
@@ -48,10 +52,16 @@ class HistoricalDataProcessor:
         # removing nan values from the dataset
         self.__removeNanValues()
 
+        # change date format
+        # self.__changeDatetime()
+
         # calculating the RSI
         self.__calculateRSI(period=14)
 
         self.__calculateEma(period=14)
+
+        # scale data
+        # self.__scaleValues()
 
         return self.__historicalData
 
